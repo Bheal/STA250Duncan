@@ -1,4 +1,8 @@
 STA250Duncan
 ============
 
-Assignments for STA250 course by Duncan Temple Lang
+================================
+==== HW Due 1/16 Description ===
+================================
+
+Assignments for STA250 course by Duncan Temple Lang.
