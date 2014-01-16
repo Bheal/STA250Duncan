@@ -1,0 +1,42 @@
+### Method 2 - Extract ArrDelay ####
+
+avg <- 0
+n <- 0
+S <- 0
+ptm <- proc.time()
+for(i in 1987:2007){ ## looping over the years
+	con <- pipe(paste("for f in ",i,".csv; do cut -f15 -d, $f| tail -n+2; done",sep="")) ## read the data using shell
+	delay <- as.integer(readLines(con))
+	delay_nona <- delay[which(!is.na(delay),T)] ## remove NA values
+	n2 <- length(delay_nona)
+	newmean <- mean(delay_nona) ## Find mean for an entire year of data
+	newS <- sum(delay_nona^2) - n2*newmean^2 ## ## Find S for an entire year of data
+	S <- S + newS + ((n * n2)/(n + n2)) * (avg - newmean)^2 ## Iterative S calculation
+	avg <- avg + (n2/(n+n2))*(newmean - avg) ## Iterative mean calculation
+	#################################
+	## Frequency Table Formulation ##
+	#################################
+	tab <- data.frame(table(delay_nona))
+	class(levels(tab$delay_nona)) = "numeric"
+	if(i == 1987) combtab <- tab
+	else {
+		bazinga <- rbind(combtab,tab)
+		combtab <- aggregate(Freq~delay_nona,data=bazinga,FUN=sum)
+		}
+	n <- n + n2 ## Sample size increment
+	}
+###Median Calculation####
+temp <- 0
+combtab$delay_nona <- levels(combtab$delay_nona)
+for(j in 1:nrow(combtab)){
+	temp <- temp + combtab[j,2]/n
+	if(abs(temp - 0.5)<1e-6) {med <- as.numeric(combtab$delay_nona[j]); break}
+	if(temp > 0.5) {med <- (as.numeric(combtab$delay_nona[j])+as.numeric(combtab$delay_nona[j-1]))/2; break}
+	}
+
+### Std. Dev. calculation
+std <- sqrt(S/(n-1))
+
+time <- proc.time() - ptm
+results2 <- list(time = time, results = c(mean = avg,sd=std, med=med), system = Sys.info(),  session = sessionInfo())
+save(results2,file="result2.RData")
