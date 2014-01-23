@@ -1,0 +1,36 @@
+## Method 7 - Using FastCSVSample ##
+
+getdelayinfo = function(i) as.integer(strsplit(samp[[i]],split=",")[[1]][15])
+				## function to get the ArrDelay info from csvSample output
+
+library(FastCSVSample) ## load the R library
+samplesize <- 1000
+ptm <- proc.time()
+for(i in 1987:2007){
+	samp <- csvSample(paste(i,".csv",sep=""),n=samplesize) ## sample using FastCSVSamle
+	delay <- sapply(1:samplesize,getdelayinfo) ## get airline delay info
+	delay_nona <- delay[which(!is.na(delay),T)] ## remove NA values
+	tab <- data.frame(table(delay_nona)) ## make a data frame with the table
+	class(levels(tab$delay_nona)) = "numeric" ## convert values to numeric class
+	if(i == 1987) combtab <- tab ##inititalize the table
+	else combtab <- rbind(combtab,tab) ##append to existing table
+	}
+
+freqtable <- aggregate(Freq ~ delay_nona, data=combtab, FUN = sum) # combine results
+freq <- freqtable$Freq
+val <- as.integer(levels(freqtable$delay_nona))
+n <- sum(freq) ## size of data
+avg <- sum(val * freq)/n ## Mean calculation
+std <- sqrt((1/(n-1))*sum((val - avg)^2 * freq)) ## Standard deviation calculation
+## Median calculation ##
+temp <- 0
+for(j in 1:nrow(freqtable)){
+	temp <- temp + freq[j]/n
+	if(abs(temp - 0.5)<1e-6) {med <- val[j]; break}
+	if(temp > 0.5) {med <- (val[j] + val[j-1])/2; break}
+	}
+
+time = proc.time() - ptm
+results7 <- list(time = time, results = c(mean = avg,sd=std, med=med), system = Sys.info(),  session = sessionInfo())
+save(results7,file="result7.RData")
+
