@@ -1,11 +1,11 @@
-### Method 2 - Extract ArrDelay ####
+### Method 2 - Extract ArrDelay Using Shell####
 
 avg <- 0
 n <- 0
 S <- 0
 ptm <- proc.time()
 for(i in 1987:2007){ ## looping over the years
-	con <- pipe(paste("for f in ",i,".csv; do cut -f15 -d, $f| tail -n+2; done",sep="")) ## read the data using shell
+	con <- pipe(paste("cut -f15 -d, ",i,".csv| tail -n+2",sep="")) ## read the data using shell
 	delay <- as.integer(readLines(con))
 	delay_nona <- delay[which(!is.na(delay),T)] ## remove NA values
 	n2 <- length(delay_nona)
@@ -24,6 +24,7 @@ for(i in 1987:2007){ ## looping over the years
 		combtab <- aggregate(Freq~delay_nona,data=bazinga,FUN=sum)
 		}
 	n <- n + n2 ## Sample size increment
+	close(con)
 	}
 ###Median Calculation####
 temp <- 0
