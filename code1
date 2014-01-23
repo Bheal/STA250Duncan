@@ -1,4 +1,4 @@
-### Method 1 - read entire file in R ####
+### Method 1 - read files one by one into R ####
 avg <- 0
 n <- 0
 S <- 0
