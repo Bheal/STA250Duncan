@@ -1,0 +1,25 @@
+## Method 5 - using shell to compute frequency table ##
+
+ptm <- proc.time()
+for(i in 1987:2007){
+	con <- pipe(paste("cut -f15 -d, ",i,".csv | tail -n+2 | sort | uniq -c",sep="")) 
+				## Read the data and compute frequency table
+	if(i==1987) freqtable <- read.table(con) ## make a data frame with the table
+	else freqtable <- rbind(freqtable, read.table(con)) 
+	}
+finalfreq <- aggregate(V1 ~ V2, data=freqtable, FUN = sum) ## combine the frequency tables
+freq <- finalfreq$V1
+val <- finalfreq$V2
+n <- sum(freq) ## size of data
+avg <- sum(val * freq)/n ## mean calculation
+std <- sqrt((1/(n-1))*sum((val - avg)^2 * freq)) ## Standard deviation calculation
+## Median Calculation ##
+temp <- 0
+for(j in 1:nrow(finalfreq)){
+	temp <- temp + freq[j]/n
+	if(abs(temp - 0.5)<1e-6) {med <- val[j]; break}
+	if(temp > 0.5) {med <- (val[j] + val[j-1])/2; break}
+	}
+time <- proc.time() - ptm
+results5 <- list(time = time, results = c(mean = avg,sd=std, med=med), system = Sys.info(),  session = sessionInfo())
+save(results5,file="result5.RData")
